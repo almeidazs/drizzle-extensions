@@ -1,0 +1,26 @@
+name: Bug report
+description: Report a reproducible problem
+title: '[Bug]: '
+labels: [bug]
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest reproducible example.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include runtime, OS, database dialect, and Drizzle version.
+    validations:
+      required: true

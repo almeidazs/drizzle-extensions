@@ -1,0 +1,89 @@
+{
+	"name": "drizzle-extensions",
+	"version": "0.1.0",
+	"description": "Type-safe, tree-shakable extensions for Drizzle ORM.",
+	"type": "module",
+	"license": "Apache-2.0",
+	"private": false,
+	"sideEffects": false,
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG.md"
+	],
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": {
+				"import": "./dist/index.d.ts",
+				"require": "./dist/index.d.cts"
+			},
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs",
+			"default": "./dist/index.js"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/almeidazs/drizzle-extensions.git"
+	},
+	"bugs": {
+		"url": "https://github.com/almeidazs/drizzle-extensions/issues"
+	},
+	"homepage": "https://github.com/almeidazs/drizzle-extensions#readme",
+	"keywords": [
+		"drizzle",
+		"drizzle-orm",
+		"database",
+		"sql",
+		"typescript",
+		"extensions"
+	],
+	"engines": {
+		"node": ">=20.19.0"
+	},
+	"packageManager": "bun@1.4.0",
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
+	"scripts": {
+		"build": "tsdown",
+		"check": "bun run check:ci",
+		"check:ci": "bun run typecheck && bun run lint:ci && bun run test && bun run build && bun run pack:check && bun run publint",
+		"check:fix": "bun run format && bun run check:ci",
+		"clean": "rm -rf dist coverage",
+		"commitlint": "commitlint --from=HEAD~1 --to=HEAD --verbose",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"lint": "biome check --write .",
+		"lint:ci": "biome ci .",
+		"pack": "bun run build && bun pm pack --ignore-scripts",
+		"pack:check": "bun pm pack --dry-run --ignore-scripts",
+		"publint": "publint",
+		"release:check": "bun run check:ci",
+		"test": "bun test",
+		"test:watch": "bun test --watch",
+		"typecheck": "tsc --noEmit",
+		"prepare": "if [ -d .git ] && [ -w .git/hooks ]; then lefthook install; fi",
+		"prepublishOnly": "bun run check:ci"
+	},
+	"peerDependencies": {
+		"drizzle-orm": ">=0.30.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.12",
+		"@commitlint/cli": "^21.1.0",
+		"@commitlint/config-conventional": "^21.1.0",
+		"@types/bun": "1.4.0",
+		"drizzle-orm": "^0.45.2",
+		"lefthook": "^1.11.14",
+		"publint": "^0.3.15",
+		"tsdown": "0.23.0",
+		"typescript": "^5.9.2",
+		"unrun": "0.3.1"
+	}
+}
