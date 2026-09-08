@@ -1,7 +1,7 @@
 {
 	"name": "drizzle-extensions",
 	"version": "0.1.0",
-	"description": "Type-safe, tree-shakable extensions for Drizzle ORM.",
+	"description": "A comprehensive library for using postgres extensions with Drizzle.",
 	"type": "module",
 	"license": "Apache-2.0",
 	"private": false,
@@ -51,7 +51,7 @@
 		"provenance": true
 	},
 	"scripts": {
-		"build": "tsdown",
+		"build": "bun run scripts/version.ts && tsdown",
 		"check": "bun run check:ci",
 		"check:ci": "bun run typecheck && bun run lint:ci && bun run test && bun run build && bun run pack:check && bun run publint",
 		"check:fix": "bun run format && bun run check:ci",

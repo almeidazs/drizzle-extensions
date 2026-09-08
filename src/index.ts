@@ -1,1 +1,1 @@
-export {}
+export { version } from './version'

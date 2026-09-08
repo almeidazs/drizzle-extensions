@@ -26,6 +26,6 @@
 		"outDir": "dist",
 		"types": ["bun"]
 	},
-	"include": ["src", "tests"],
+	"include": ["src", "tests", "scripts"],
 	"exclude": ["dist", "coverage", "node_modules"]
 }
