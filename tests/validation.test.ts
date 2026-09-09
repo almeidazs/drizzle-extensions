@@ -6,7 +6,7 @@ import { createDatabase, searchable } from './fixtures'
 test('rejects an extension whose string requirement is not configured', () => {
 	const dependent = defineExtension({
 		name: 'dependent',
-		postgres: { extension: 'dependent' },
+		postgres: { extension: 'dependent', version: '>=1.0' },
 		requires: ['dependency'],
 	})
 
@@ -18,11 +18,11 @@ test('rejects an extension whose string requirement is not configured', () => {
 test('rejects an extension whose extension requirement is not configured', () => {
 	const dependency = defineExtension({
 		name: 'dependency',
-		postgres: { extension: 'dependency' },
+		postgres: { extension: 'dependency', version: '>=1.0' },
 	})
 	const dependent = defineExtension({
 		name: 'dependent',
-		postgres: { extension: 'dependent' },
+		postgres: { extension: 'dependent', version: '>=1.0' },
 		requires: [dependency],
 	})
 
@@ -34,11 +34,11 @@ test('rejects an extension whose extension requirement is not configured', () =>
 test('accepts configured string and extension requirements', () => {
 	const dependency = defineExtension({
 		name: 'dependency',
-		postgres: { extension: 'dependency' },
+		postgres: { extension: 'dependency', version: '>=1.0' },
 	})
 	const dependent = defineExtension({
 		name: 'dependent',
-		postgres: { extension: 'dependent' },
+		postgres: { extension: 'dependent', version: '>=1.0' },
 		requires: ['dependency', dependency],
 	})
 
@@ -50,7 +50,7 @@ test('accepts configured string and extension requirements', () => {
 test('rejects methods that overwrite methods from another extension', () => {
 	const duplicate = defineExtension({
 		name: 'duplicate',
-		postgres: { extension: 'duplicate' },
+		postgres: { extension: 'duplicate', version: '>=1.0' },
 		table() {
 			return { search: () => undefined }
 		},
@@ -66,7 +66,7 @@ test('rejects methods that overwrite methods from another extension', () => {
 test('rejects methods that overwrite Drizzle query-builder methods', () => {
 	const conflicting = defineExtension({
 		name: 'conflicting',
-		postgres: { extension: 'conflicting' },
+		postgres: { extension: 'conflicting', version: '>=1.0' },
 		table() {
 			return { findMany: () => undefined }
 		},
@@ -82,7 +82,7 @@ test('rejects methods that overwrite Drizzle query-builder methods', () => {
 test('rejects non-function factory results from JavaScript callers', () => {
 	const invalid = {
 		name: 'invalid',
-		postgres: { extension: 'invalid' },
+		postgres: { extension: 'invalid', version: '>=1.0' },
 		table: () => ({ invalid: 'not a function' }),
 	} as unknown as Extension
 
@@ -94,7 +94,7 @@ test('rejects non-function factory results from JavaScript callers', () => {
 test('rejects asynchronous table factories from JavaScript callers', () => {
 	const invalid = {
 		name: 'async',
-		postgres: { extension: 'async' },
+		postgres: { extension: 'async', version: '>=1.0' },
 		table: async () => ({ search: () => undefined }),
 	} as unknown as Extension
 
@@ -108,7 +108,7 @@ test('rejects callable thenables from JavaScript callers', () => {
 	const thenable = Object.assign(() => undefined, { then: () => undefined })
 	const invalid = {
 		name: 'callable-thenable',
-		postgres: { extension: 'callable-thenable' },
+		postgres: { extension: 'callable-thenable', version: '>=1.0' },
 		table: () => thenable,
 	} as unknown as Extension
 

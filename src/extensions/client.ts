@@ -6,6 +6,7 @@ import type {
 	ExtendsOptions,
 	Extension,
 	ExtensionsMetadata,
+	GenerateExtensionsOptions,
 } from '../types'
 import type { RuntimeQuery } from '../types/extensions'
 
@@ -39,12 +40,23 @@ export function $extends<
 		TDatabase,
 		TExtensions
 	>
-	const names = Object.freeze(
-		options.extensions.map((extension) => extension.name),
+	const configuredExtensions = Object.freeze(
+		options.extensions.map((extension) =>
+			Object.freeze({
+				...extension,
+				postgres: Object.freeze({ ...extension.postgres }),
+			}),
+		),
 	)
-	const sql = generateExtensionsSql(options.extensions)
+	const names = Object.freeze(
+		configuredExtensions.map((extension) => extension.name),
+	)
+	const sql = generateExtensionsSql(configuredExtensions)
 	const extensions: ExtensionsMetadata<TExtensions> = Object.freeze({
-		generate: () => sql,
+		generate: (generateOptions: GenerateExtensionsOptions | undefined) =>
+			generateOptions?.enforceMinimumVersion
+				? generateExtensionsSql(configuredExtensions, generateOptions)
+				: sql,
 		names,
 	})
 

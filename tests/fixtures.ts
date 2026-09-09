@@ -19,7 +19,7 @@ export function createDatabase() {
 
 export const searchable = defineExtension({
 	name: 'searchable',
-	postgres: { extension: 'pg_trgm' },
+	postgres: { extension: 'pg_trgm', version: '>=1.6' },
 	table({ db, table }) {
 		return {
 			search: async (query: string) => ({ db, query, table }),
@@ -29,7 +29,7 @@ export const searchable = defineExtension({
 
 export const auditable = defineExtension({
 	name: 'auditable',
-	postgres: { extension: 'audit' },
+	postgres: { extension: 'audit', version: '>=1.0' },
 	table() {
 		return {
 			auditLabel: () => 'auditable',

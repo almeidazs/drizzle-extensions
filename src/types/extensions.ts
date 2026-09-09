@@ -31,6 +31,8 @@ export interface ExtensionTableContext<
 export interface PostgresExtensionConfig {
 	/** PostgreSQL's installed extension identifier, such as `pg_trgm`. */
 	readonly extension: string
+	/** Minimum supported version of the PostgreSQL extension. */
+	readonly version: `>=${string}`
 }
 
 /** Defines the behavior an extension contributes to relational tables. */
@@ -71,12 +73,18 @@ export interface ExtendsOptions<TExtensions extends readonly Extension[]> {
 type ExtensionNames<TExtensions extends readonly Extension[]> =
 	TExtensions[number]['name'] & string
 
+/** Options for generating PostgreSQL extension installation SQL. */
+export interface GenerateExtensionsOptions {
+	/** Verify the installed or available extension version before installing it. */
+	readonly enforceMinimumVersion?: boolean
+}
+
 /** Metadata and migration SQL for extensions configured on a client. */
 export interface ExtensionsMetadata<TExtensions extends readonly Extension[]> {
 	/** Public extension names in the same order they were configured. */
 	readonly names: readonly ExtensionNames<TExtensions>[]
 	/** Generates PostgreSQL statements that install every configured extension. */
-	generate(): string
+	generate(options?: GenerateExtensionsOptions): string
 }
 
 type ExtensionMethodsOf<TExtension extends Extension> = TExtension extends {

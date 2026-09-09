@@ -7,5 +7,6 @@ export type {
 	ExtensionsMetadata,
 	ExtensionTableContext,
 	ExtensionTableMethods,
+	GenerateExtensionsOptions,
 	PostgresExtensionConfig,
 } from './extensions'

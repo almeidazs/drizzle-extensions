@@ -12,6 +12,7 @@ import {
 	type AnyPgDatabase,
 	type Extension,
 	type ExtensionDefinition,
+	type GenerateExtensionsOptions,
 } from '../src/index'
 import { auditable, createDatabase, type schema, searchable } from './fixtures'
 
@@ -32,11 +33,19 @@ expectType<
 expectType<() => string>(database.query.users.auditLabel)
 expectType<readonly ('searchable' | 'auditable')[]>(database.$extensions.names)
 expectType<() => string>(database.$extensions.generate)
+expectType<(options?: GenerateExtensionsOptions) => string>(
+	database.$extensions.generate,
+)
 expectType<'extension'>(searchable.type)
 expectType<Extension>(searchable)
 expectType<ExtensionDefinition>({
 	name: 'definition',
-	postgres: { extension: 'definition' },
+	postgres: { extension: 'definition', version: '>=1.6' },
+})
+expectType<ExtensionDefinition>({
+	name: 'missing-version',
+	// @ts-expect-error PostgreSQL extension versions are required metadata.
+	postgres: { extension: 'missing-version' },
 })
 expectType<false>(
 	false as 'search' extends keyof typeof base.query.users ? true : false,
