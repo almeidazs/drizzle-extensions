@@ -30,6 +30,8 @@ expectType<
 	) => Promise<{ db: AnyPgDatabase; query: string; table: AnyPgTable }>
 >(database.query.users.search)
 expectType<() => string>(database.query.users.auditLabel)
+expectType<readonly ('searchable' | 'auditable')[]>(database.$extensions.names)
+expectType<() => string>(database.$extensions.generate)
 expectType<'extension'>(searchable.type)
 expectType<Extension>(searchable)
 expectType<ExtensionDefinition>({

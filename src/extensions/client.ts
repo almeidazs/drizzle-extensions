@@ -1,9 +1,11 @@
+import { generateExtensionsSql } from '../shared/extensions-sql'
 import { extendQuery } from '../shared/query'
 import type {
 	AnyPgDatabase,
 	ExtendedDatabase,
 	ExtendsOptions,
 	Extension,
+	ExtensionsMetadata,
 } from '../types'
 import type { RuntimeQuery } from '../types/extensions'
 
@@ -22,6 +24,21 @@ export function $extends<
 		TDatabase,
 		TExtensions
 	>
+	const names = Object.freeze(
+		options.extensions.map((extension) => extension.name),
+	)
+	const sql = generateExtensionsSql(options.extensions)
+	const extensions: ExtensionsMetadata<TExtensions> = Object.freeze({
+		generate: () => sql,
+		names,
+	})
+
+	Object.defineProperty(extendedDatabase, '$extensions', {
+		configurable: true,
+		enumerable: true,
+		value: extensions,
+		writable: false,
+	})
 
 	if (database._.schema) {
 		const query = Object.create(database.query) as RuntimeQuery

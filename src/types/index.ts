@@ -4,6 +4,7 @@ export type {
 	ExtendsOptions,
 	Extension,
 	ExtensionDefinition,
+	ExtensionsMetadata,
 	ExtensionTableContext,
 	ExtensionTableMethods,
 	PostgresExtensionConfig,

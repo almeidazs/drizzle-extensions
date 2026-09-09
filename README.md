@@ -43,3 +43,20 @@ overwrite one another or Drizzle query-builder methods.
 
 The `postgres.extension` value is metadata in this release. Installing
 PostgreSQL extensions is intentionally left to migrations or database setup.
+
+## Extension metadata and migration SQL
+
+The extended client exposes the configured extensions through `$extensions`:
+
+```ts
+db.$extensions.names
+// ['searchable']
+
+db.$extensions.generate()
+// CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+```
+
+`names` is an immutable snapshot of the public extension names in configuration
+order. `generate()` returns a snapshot of the PostgreSQL installation SQL; it
+uses `postgres.extension`, quotes identifiers safely, and emits duplicate
+extension identifiers only once. It does not write files or execute SQL.
