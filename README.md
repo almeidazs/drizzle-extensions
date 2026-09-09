@@ -44,6 +44,17 @@ overwrite one another or Drizzle query-builder methods.
 The `postgres.extension` value is metadata in this release. Installing
 PostgreSQL extensions is intentionally left to migrations or database setup.
 
+Use `requires` to declare extensions that must be passed to `$extends` together.
+Entries can be extension names or other extension definitions:
+
+```ts
+const awesomeSearch = defineExtension({
+	name: 'awesome-search',
+	postgres: { extension: 'awesome_search' },
+	requires: ['pg-trgm', unaccent],
+})
+```
+
 ## Extension metadata and migration SQL
 
 The extended client exposes the configured extensions through `$extensions`:

@@ -42,6 +42,11 @@ export interface Extension<
 	/** Declarative metadata for the required PostgreSQL extension. */
 	readonly postgres: PostgresExtensionConfig
 	/**
+	 * Extensions that must be configured alongside this extension.
+	 * Strings are extension names; extension definitions use their name.
+	 */
+	readonly requires?: readonly (string | Extension)[]
+	/**
 	 * Synchronously creates methods for each relational table in the schema.
 	 * Returned methods may themselves be asynchronous.
 	 */

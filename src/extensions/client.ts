@@ -20,6 +20,21 @@ export function $extends<
 	database: TDatabase,
 	options: ExtendsOptions<TExtensions>,
 ): ExtendedDatabase<TDatabase, TExtensions> {
+	for (const extension of options.extensions) {
+		for (const requiredExtension of extension.requires ?? []) {
+			const requiredName =
+				typeof requiredExtension === 'string'
+					? requiredExtension
+					: requiredExtension.name
+
+			if (options.extensions.some(({ name }) => name === requiredName)) continue
+
+			throw new Error(
+				`Extension "${extension.name}" requires extension "${requiredName}" to be configured.`,
+			)
+		}
+	}
+
 	const extendedDatabase = Object.create(database) as ExtendedDatabase<
 		TDatabase,
 		TExtensions

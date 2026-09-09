@@ -3,6 +3,50 @@ import { expect, test } from 'bun:test'
 import { $extends, defineExtension, type Extension } from '../src/index'
 import { createDatabase, searchable } from './fixtures'
 
+test('rejects an extension whose string requirement is not configured', () => {
+	const dependent = defineExtension({
+		name: 'dependent',
+		postgres: { extension: 'dependent' },
+		requires: ['dependency'],
+	})
+
+	expect(() => $extends(createDatabase(), { extensions: [dependent] })).toThrow(
+		'Extension "dependent" requires extension "dependency" to be configured.',
+	)
+})
+
+test('rejects an extension whose extension requirement is not configured', () => {
+	const dependency = defineExtension({
+		name: 'dependency',
+		postgres: { extension: 'dependency' },
+	})
+	const dependent = defineExtension({
+		name: 'dependent',
+		postgres: { extension: 'dependent' },
+		requires: [dependency],
+	})
+
+	expect(() => $extends(createDatabase(), { extensions: [dependent] })).toThrow(
+		'Extension "dependent" requires extension "dependency" to be configured.',
+	)
+})
+
+test('accepts configured string and extension requirements', () => {
+	const dependency = defineExtension({
+		name: 'dependency',
+		postgres: { extension: 'dependency' },
+	})
+	const dependent = defineExtension({
+		name: 'dependent',
+		postgres: { extension: 'dependent' },
+		requires: ['dependency', dependency],
+	})
+
+	expect(() =>
+		$extends(createDatabase(), { extensions: [dependent, dependency] }),
+	).not.toThrow()
+})
+
 test('rejects methods that overwrite methods from another extension', () => {
 	const duplicate = defineExtension({
 		name: 'duplicate',
