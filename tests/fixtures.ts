@@ -1,4 +1,4 @@
-import { pgTable, text } from 'drizzle-orm/pg-core'
+import { integer, pgTable, text, vector } from 'drizzle-orm/pg-core'
 import { drizzle } from 'drizzle-orm/pg-proxy'
 
 import { defineExtension } from '../src/index'
@@ -13,8 +13,28 @@ export const posts = pgTable('posts', {
 
 export const schema = { posts, users }
 
+export const documents = pgTable('documents', {
+	embedding: vector({ dimensions: 3 }).notNull(),
+	id: integer().primaryKey(),
+	title: text().notNull(),
+})
+
+export const vectorSchema = { documents, users }
+
 export function createDatabase() {
 	return drizzle(async () => ({ rows: [] }), { schema })
+}
+
+export function createVectorDatabase(
+	queries: { params: unknown[]; sql: string }[],
+) {
+	return drizzle(
+		async (sql, params) => {
+			queries.push({ params, sql })
+			return { rows: [] }
+		},
+		{ schema: vectorSchema },
+	)
 }
 
 export const searchable = defineExtension({

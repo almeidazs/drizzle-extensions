@@ -2,83 +2,55 @@
 
 Typed PostgreSQL extension helpers for Drizzle ORM.
 
-Install it alongside a supported PostgreSQL Drizzle driver. `drizzle-extensions`
-declares `drizzle-orm@>=0.30.0` as a peer dependency and works with its
-PostgreSQL database clients, including `postgres-js`, `node-postgres`, Neon,
-PGlite, and the PostgreSQL proxy driver.
+`drizzle-extensions` composes PostgreSQL-specific behavior onto a Drizzle
+client without changing its base client or replacing Drizzle's schema APIs.
+Extensions add methods to eligible relational query builders at
+`db.query.<table>` and preserve the table and selected-result types.
 
-## Extending relational queries
+Install it alongside `drizzle-orm`. The package supports PostgreSQL Drizzle
+clients such as postgres-js, node-postgres, Neon, PGlite, and the PostgreSQL
+proxy driver.
 
-Define an extension and compose it with a PostgreSQL Drizzle client that was
-created with a schema. A schema is required for table methods, because they are
-attached to `db.query.<table>`:
+## Basic usage
+
+Pass extension instances to `$extends()`. For example, pgvector adds a useful
+nearest-neighbor API only to tables that have a native Drizzle vector column:
 
 ```ts
 import { drizzle } from 'drizzle-orm/postgres-js'
-import { $extends, defineExtension } from 'drizzle-extensions'
+import { integer, pgTable, vector as vectorColumn } from 'drizzle-orm/pg-core'
+import { $extends } from 'drizzle-extensions'
+import { vector } from 'drizzle-extensions/vector'
 
-const searchable = defineExtension({
-	name: 'searchable',
-	postgres: { extension: 'pg_trgm', version: '>=1.6' },
-	table({ db, table }) {
-		return {
-			async search(query: string) {
-				return db.select().from(table)
-			},
-		}
-	},
+const documents = pgTable('documents', {
+	id: integer().primaryKey(),
+	embedding: vectorColumn({ dimensions: 1536 }).notNull(),
 })
 
-const base = drizzle(client, { schema })
-const db = $extends(base, { extensions: [searchable] })
+const base = drizzle(client, { schema: { documents } })
+const db = $extends(base, { extensions: [vector()] })
 
-await db.query.users.search('John')
-```
-
-`$extends()` returns a new client and never changes the base client. Each
-extension's `table` factory runs once for every relational table and receives
-the extended client plus the original schema table. Factories must be
-synchronous, although their returned methods may be async. Extensions cannot
-overwrite one another or Drizzle query-builder methods.
-
-The `postgres` configuration records the extension identifier and its minimum
-supported version. It is metadata in this release: installing PostgreSQL
-extensions and checking their installed versions are left to migrations or
-database setup.
-
-Use `requires` to declare extensions that must be passed to `$extends` together.
-Entries can be extension names or other extension definitions:
-
-```ts
-const awesomeSearch = defineExtension({
-	name: 'awesome-search',
-	postgres: { extension: 'awesome_search', version: '>=1.6' },
-	requires: ['pg-trgm', unaccent],
+const results = await db.query.documents.nearest({
+	vector: embedding,
+	include: { similarity: true },
 })
 ```
 
-## Extension metadata and migration SQL
+`$extends()` returns a new client and never changes the base client. It checks
+that extension methods do not collide with Drizzle or each other.
 
-The extended client exposes the configured extensions through `$extensions`:
+## Creating an extension
 
-```ts
-db.$extensions.names
-// ['searchable']
+Use `defineExtension()` for extension metadata and table methods. A `table`
+factory receives the extended client and its original schema table. The factory
+must be synchronous, but its methods may be asynchronous. Extensions can also
+declare `requires` dependencies by name or definition.
 
-db.$extensions.generate()
-// CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+The `postgres` metadata drives installation SQL available at
+`db.$extensions.generate()`. It only returns SQL; it never writes migration
+files or executes statements. `db.$extensions.names` is an immutable,
+configuration-ordered list of extension names.
 
-db.$extensions.generate({ enforceMinimumVersion: true })
-// Verifies the installed or available extension version before creating it.
-```
-
-`names` is an immutable snapshot of the public extension names in configuration
-order. `generate()` returns a snapshot of the PostgreSQL installation SQL; it
-uses `postgres.extension`, quotes identifiers safely, and emits duplicate
-extension identifiers only once. It does not write files or execute SQL.
-
-Pass `{ enforceMinimumVersion: true }` to generate `DO` blocks that check the
-installed extension version, or its available default version before creation,
-against `postgres.version`. If the version is too old or unavailable, the block
-raises an error without creating the extension. Version checks support numeric
-dot-separated versions such as `>=1.6`.
+Every extension has its own documentation in its source directory. See
+[`src/extensions/vector/README.md`](src/extensions/vector/README.md) for the
+pgvector API, supported options, SQL helpers, indexes, and runtime metadata.

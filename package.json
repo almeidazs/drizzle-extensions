@@ -24,6 +24,15 @@
 			"import": "./dist/index.js",
 			"require": "./dist/index.cjs",
 			"default": "./dist/index.js"
+		},
+		"./vector": {
+			"types": {
+				"import": "./dist/vector.d.ts",
+				"require": "./dist/vector.d.cts"
+			},
+			"import": "./dist/vector.js",
+			"require": "./dist/vector.cjs",
+			"default": "./dist/vector.js"
 		}
 	},
 	"repository": {

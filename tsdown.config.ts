@@ -5,6 +5,7 @@ export default defineConfig({
 	dts: true,
 	entry: {
 		index: 'src/index.ts',
+		vector: 'src/extensions/vector/index.ts',
 	},
 	deps: {
 		neverBundle: true,

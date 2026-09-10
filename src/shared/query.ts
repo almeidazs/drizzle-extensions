@@ -1,12 +1,53 @@
 import type { AnyPgTable } from 'drizzle-orm/pg-core'
+import { getTableColumns } from 'drizzle-orm/utils'
 
 import type {
 	AnyPgDatabase,
 	Extension,
 	ExtensionTableContext,
 	RuntimeQuery,
+	TableMethod,
+	TableMethodDefinitions,
 } from '../types/extensions'
 import { isThenable } from './is-thenable'
+
+type RuntimeTableMethod = TableMethod & {
+	readonly execute: (
+		context: ExtensionTableContext,
+		...arguments_: unknown[]
+	) => unknown
+}
+
+function isTableMethod(value: unknown): value is RuntimeTableMethod {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		'value' in value === false &&
+		(value as { type?: unknown }).type === 'table-method' &&
+		typeof (value as { execute?: unknown }).execute === 'function'
+	)
+}
+
+function supportsTable(method: RuntimeTableMethod, table: AnyPgTable): boolean {
+	return Object.values(getTableColumns(table)).some((column) =>
+		method.columns.columnTypes.includes(column.columnType as never),
+	)
+}
+
+function addMethod(
+	extension: Extension,
+	tableName: string,
+	queryBuilder: RuntimeQuery[string],
+	methodName: string,
+	method: (...arguments_: never[]) => unknown,
+): void {
+	if (methodName in queryBuilder)
+		throw new Error(
+			`Extension "${extension.name}" cannot add "${methodName}" to "${tableName}": the method already exists.`,
+		)
+
+	queryBuilder[methodName] = method
+}
 
 /** Composes extension methods into a cloned relational-query namespace. */
 export function extendQuery(
@@ -36,7 +77,32 @@ export function extendQuery(
 
 		for (const extension of extensions) {
 			const context: ExtensionTableContext = { db: extendedDatabase, table }
-			const methods = extension.table?.(context)
+			if (!extension.table) continue
+
+			if (typeof extension.table !== 'function') {
+				for (const [methodName, method] of Object.entries(
+					extension.table as TableMethodDefinitions,
+				)) {
+					if (!isTableMethod(method))
+						throw new TypeError(
+							`Extension "${extension.name}" must define table methods with defineTableMethod().`,
+						)
+
+					if (!supportsTable(method, table)) continue
+
+					addMethod(
+						extension,
+						tableName,
+						queryBuilder,
+						methodName,
+						(...arguments_: never[]) => method.execute(context, ...arguments_),
+					)
+				}
+
+				continue
+			}
+
+			const methods = extension.table(context)
 
 			if (isThenable(methods))
 				throw new TypeError(
@@ -51,12 +117,7 @@ export function extendQuery(
 						`Extension "${extension.name}" must return functions from its table factory.`,
 					)
 
-				if (methodName in queryBuilder)
-					throw new Error(
-						`Extension "${extension.name}" cannot add "${methodName}" to "${tableName}": the method already exists.`,
-					)
-
-				queryBuilder[methodName] = method
+				addMethod(extension, tableName, queryBuilder, methodName, method)
 			}
 		}
 	}

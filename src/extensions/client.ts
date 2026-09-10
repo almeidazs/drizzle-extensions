@@ -58,7 +58,21 @@ export function $extends<
 				? generateExtensionsSql(configuredExtensions, generateOptions)
 				: sql,
 		names,
-	})
+		...Object.fromEntries(
+			configuredExtensions.flatMap((extension) =>
+				extension.lifecycle
+					? [
+							[
+								extension.name,
+								Object.freeze({
+									info: () => extension.lifecycle?.info(extendedDatabase),
+								}),
+							],
+						]
+					: [],
+			),
+		),
+	}) as ExtensionsMetadata<TExtensions>
 
 	Object.defineProperty(extendedDatabase, '$extensions', {
 		configurable: true,
